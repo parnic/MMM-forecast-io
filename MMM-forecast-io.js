@@ -2,10 +2,10 @@ Module.register("MMM-forecast-io", {
 
   defaults: {
     apiKey: "",
-    apiBase: "https://api.darksky.net/forecast",
+    apiBase: "https://api.pirateweather.net/forecast",
     units: config.units,
     language: config.language,
-    updateInterval: 5 * 60 * 1000, // every 5 minutes
+    updateInterval: 15 * 60 * 1000, // every 15 minutes
     animationSpeed: 1000,
     initialLoadDelay: 0, // 0 seconds delay
     retryDelay: 2500,
@@ -63,7 +63,6 @@ Module.register("MMM-forecast-io", {
 
   getScripts: function () {
     return [
-      'jsonp.js',
       'moment.js'
     ];
   },
@@ -79,6 +78,7 @@ Module.register("MMM-forecast-io", {
 
   start: function () {
     Log.info("Starting module: " + this.name);
+    this.sendSocketNotification("FORECAST-IO-CONFIG", this.config);
 
     // still accept the old config
     if (this.config.hasOwnProperty("showPrecipitationGraph")) {
@@ -91,6 +91,12 @@ Module.register("MMM-forecast-io", {
     this.scheduleUpdate(this.config.initialLoadDelay);
   },
 
+  socketNotificationReceived: function(notification, payload) {
+    if (notification === 'FORECAST-IO-READY') {
+      this.processWeather(payload);
+    }
+  },
+
   updateWeather: function () {
     if (this.geoLocationLookupFailed) {
       return;
@@ -100,14 +106,11 @@ Module.register("MMM-forecast-io", {
       return;
     }
 
-    var units = this.config.unitTable[this.config.units] || 'auto';
-
-    var url = this.config.apiBase + '/' + this.config.apiKey + '/' + this.config.latitude + ',' + this.config.longitude + '?units=' + units + '&lang=' + this.config.language;
     if (this.config.data) {
       // for debugging
       this.processWeather(this.config.data);
     } else {
-      getJSONP(url, this.processWeather.bind(this), this.processWeatherError.bind(this));
+      this.sendSocketNotification('FORECAST-IO-GET');
     }
   },
 
