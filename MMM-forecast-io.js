@@ -88,29 +88,16 @@ Module.register("MMM-forecast-io", {
     if (this.shouldLookupGeolocation()) {
       this.getLocation();
     }
-    this.scheduleUpdate(this.config.initialLoadDelay);
+
+    // debugging support
+    if (this.config.data) {
+        this.processWeather(this.config.data);
+    }
   },
 
   socketNotificationReceived: function(notification, payload) {
     if (notification === 'FORECAST-IO-READY') {
       this.processWeather(payload);
-    }
-  },
-
-  updateWeather: function () {
-    if (this.geoLocationLookupFailed) {
-      return;
-    }
-    if (this.shouldLookupGeolocation() && !this.geoLocationLookupSuccess) {
-      this.scheduleUpdate(1000); // try again in one second
-      return;
-    }
-
-    if (this.config.data) {
-      // for debugging
-      this.processWeather(this.config.data);
-    } else {
-      this.sendSocketNotification('FORECAST-IO-GET');
     }
   },
 
@@ -123,15 +110,12 @@ Module.register("MMM-forecast-io", {
     this.feelsLike = this.roundTemp(this.weatherData.currently.apparentTemperature); // process feelsLike data
     this.temp = this.roundTemp(this.weatherData.currently.temperature);
     this.updateDom(this.config.animationSpeed);
-    this.scheduleUpdate();
   },
 
   processWeatherError: function (error) {
     if (this.config.debug) {
       console.log('process weather error', error);
     }
-    // try later
-    this.scheduleUpdate();
   },
 
   notificationReceived: function(notification, payload, sender) {
@@ -511,18 +495,6 @@ Module.register("MMM-forecast-io", {
     var index = Math.trunc((degree+11.25)/22.5);
 
     return cardinalDirections[index];
-  },
-
-  scheduleUpdate: function(delay) {
-    var nextLoad = this.config.updateInterval;
-    if (typeof delay !== "undefined" && delay >= 0) {
-      nextLoad = delay;
-    }
-
-    var self = this;
-    setTimeout(function() {
-      self.updateWeather();
-    }, nextLoad);
   }
 
 });

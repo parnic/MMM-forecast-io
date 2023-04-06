@@ -26,20 +26,21 @@ module.exports = NodeHelper.create({
             return;
         }
 
-        const json = await response.json();
+        this.lastForecast = await response.json();
         log.info('[MMM-forecast-io]   success! notifying client');
-        this.sendSocketNotification('FORECAST-IO-READY', json);
+        this.sendSocketNotification('FORECAST-IO-READY', this.lastForecast);
     },
 
     socketNotificationReceived: function(notification, payload) {
         if (notification === 'FORECAST-IO-CONFIG') {
+            let firstRegistrar = !this.config;
             this.config = payload;
-        } else if (notification === 'FORECAST-IO-GET') {
-            if (!this.config) {
-                log.error("[MMM-forecast-io] Forecast requested, but no config available.");
-                return;
-	    }
-            this.fetchForecast();
+            if (firstRegistrar) {
+                this.fetchForecast();
+                setInterval(() => this.fetchForecast(), this.config.updateInterval);
+            } else if (this.lastForecast) {
+                this.sendSocketNotification('FORECAST-IO-READY', this.lastForecast);
+            }
         }
     }
 });
