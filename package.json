@@ -1,0 +1,31 @@
+{
+    "name": "mmm-forecast-io",
+    "version": "1.0.0",
+    "description": "Dark Sky module for MagicMirror2",
+    "main": "MMM-forecast-io.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "lint": "eslint --ignore-path .gitignore ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/parnic/MMM-forecast-io.git"
+    },
+    "keywords": [
+        "MagicMirror",
+        "forecast.io",
+        "darksky"
+    ],
+    "author": "Doug McInnes, Parnic",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/parnic/MMM-forecast-io/issues"
+    },
+    "homepage": "https://github.com/parnic/MMM-forecast-io#readme",
+    "devDependencies": {
+        "eslint": "^7.12.1"
+    },
+    "dependencies": {
+        "node-fetch": "^3.3.2"
+    }
+}
